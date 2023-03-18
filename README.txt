@@ -29,13 +29,13 @@ ensure all tables were setup correctly.
 
 You will then be prompted to enter details about Adobe Connect Pro server.  You may not see the 'Test Connection' button at first.  In the
 administrator block click on Modules -> Activities -> Adobe Connect and you should now see the 'Test Connection' button.
-Be sure to test your connection. 
+Be sure to test your connection.
 
 Once that is complete you can begin to create and administer meetings.
 
 
 Maintainer Contact information
-Company: abatech
-Author: hossein abaei
-Email: info@abatech.ir
-Site: http://abatech.ir/
+Company: iAmir
+Author: Amirhossein Jahani
+Email: me@iamir.net
+Site: http://iamir.net/
