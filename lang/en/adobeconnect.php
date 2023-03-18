@@ -30,8 +30,7 @@ $string['duplicatemeetingname'] = 'A duplicate meeting name was found on the ser
 $string['duplicateurl'] = 'A duplicate meeting URL was found on the server';
 $string['editingfor'] = 'Editing for: $a';
 $string['email_login'] = 'Email address login';
-$string['email_login_desc'] = 'Check this option only if your Connect Pro server login is set to use email address. Note that toggling '.
-                              'this option on/off during regular usage of this activity module can potentially create duplicaed users on the Connect Pro server';
+$string['email_login_desc'] = 'Check this option only if your Connect Pro server login is set to use email address. Note that toggling this option on/off during regular usage of this activity module can potentially create duplicaed users on the Connect Pro server';
 $string['endtime'] = 'End time';
 $string['existingusers'] = '$a existing users';
 $string['groupswitch'] = 'Filter by group';
@@ -72,16 +71,14 @@ $string['starttime'] = 'Start time';
 $string['usergrouprequired'] = 'This Meeting requires users to be in a group in order to join';
 $string['testconnection'] = 'Test Connection';
 $string['connectiontesttitle'] = 'Connection test window';
-$string['conntestintro'] = '<p>A series of tests have been run in order to determine whether the Adobe Connect Pro server has been properly setup for this integration to work'.
-' and to also determine whether the user credentials provided in the activity global settings has the correct permissions to perform the neccessary tasks required by the'.
-' activity module.  If any of the tests below have failed, this activity module will not function properly.</p><p> For further assistance and documentation in how to set up your'.
-' Adobe Connect Pro server please consult the MoodleDocs help page for this activity module <a href="{$a->url}">Help page</a></p>';
+$string['conntestintro'] = '<p>A series of tests have been run in order to determine whether the Adobe Connect Pro server has been properly setup for this integration to work  and to also determine whether the user credentials provided in the activity global settings has the correct permissions to perform the neccessary tasks required by the  activity module.  If any of the tests below have failed, this activity module will not function properly.</p><p> For further assistance and documentation in how to set up your  Adobe Connect Pro server please consult the MoodleDocs help page for this activity module <a href="{$a->url}">Help page</a></p>';
 $string['greaterstarttime'] = 'The start time cannot be greater than the end time';
 $string['invalidadobemeeturl'] = 'Invalid entry for this field.  Click the help bubble for valid entries';
 
 $string['adobeconnect:meetingpresenter'] = 'Meeting Presenter';
 $string['adobeconnect:meetingparticipant'] = 'Meeting Particpant';
 $string['adobeconnect:meetinghost'] = 'Meeting Host';
+$string['adobeconnect:view_rollcall'] = 'view rollcall';
 $string['public'] = 'Public';
 $string['private'] = 'Private';
 
@@ -112,7 +109,7 @@ $string['settingblurb'] = '<center><img src="{$a->image}" /></center><br />
     Alfresco partner. The company offers SaaS hosting services, IT support contracts, custom
     programming, workforce development training, instructional design and strategic consulting
     services for organizations planning online learning programs.</p><br />
-    <p>Visit {$a->url} for information on Enterprise support</p>';
+    <p>Visit the <a href="{$a->url}">Adobe Connect Moodle Plugins Directory</a> for information on Enterprise support.</p>';
 $string['meeturl_help'] = '<p>You can customize the URL that is used to connect to the Adobe connect meeting.  The Adobe Server domain will always remain the same.
   However the last part of the URL can be customized.
 </p>
@@ -165,3 +162,20 @@ $string['longurl'] = 'That meeting URL is too long. Try shortening it';
 $string['errorrecording'] = 'Unable to find recording session';
 $string['meetinfo'] = 'More Meeting Detail';
 $string['meetinfotxt'] = 'See server meeting details';
+$string['missingexpectedgroups'] = 'There are no groups available.';
+$string['event_view'] = 'Viewed activity';
+$string['event_view_all'] = 'Viewed all instances of the activity';
+$string['event_join_meeting'] = 'User joined a meeting';
+$string['event_view_recording'] = 'User viewed a recording';
+$string['event_assign_role'] = 'User assigned a Connect Pro role';
+$string['event_unassign_role'] = 'User unassigned a Connect Pro role';
+$string['start'] = 'start';
+$string['end'] = 'end';
+$string['rollcall'] = 'rollcall';
+$string['duration'] = 'duration';
+
+/********/
+$string['meetingserver'] = 'Server';
+$string['server'] = 'Server';
+$string['count_servers'] = 'Servers Count';
+$string['setting_server'] = 'Setting Server';

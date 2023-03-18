@@ -16,7 +16,7 @@ Alfresco partner. The company offers SaaS hosting services, IT support contracts
 programming, workforce development training, instructional design and strategic consulting
 services for organizations planning online learning programs.
 
-Visit http://remote-learner.net/adobeconnectpro for information on Enterprise support.
+Visit https://github.com/hossein142001/moodle-mod_adobeconnect for information on Enterprise support.
 
 
 INSTALL INSTRUCTIONS
@@ -35,6 +35,7 @@ Once that is complete you can begin to create and administer meetings.
 
 
 Maintainer Contact information
-Company: Remote Learner
-Author: Akinsaya Delamarre
-Email: adelamarre@remote-learner.net
+Company: abatech
+Author: hossein abaei
+Email: info@abatech.ir
+Site: http://abatech.ir/

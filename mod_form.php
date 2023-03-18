@@ -1,9 +1,24 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * @package mod
- * @subpackage adobeconnect
- * @author Akinsaya Delamarre (adelamarre@remote-learner.net)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_adobeconnect
+ * @author     Akinsaya Delamarre (adelamarre@remote-learner.net)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2015 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 if (!defined('MOODLE_INTERNAL')) {
@@ -35,7 +50,7 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
     /// Adding the required "intro" field to hold the description of the instance
-        $this->add_intro_editor(false, get_string('adobeconnectintro', 'adobeconnect'));
+        $this->standard_intro_elements(get_string('adobeconnectintro', 'adobeconnect'));
 
 //        $mform->addElement('htmleditor', 'intro', get_string('adobeconnectintro', 'adobeconnect'));
 //        $mform->setType('intro', PARAM_RAW);
@@ -58,7 +73,13 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
         $mform->addHelpButton('meeturl', 'meeturl', 'adobeconnect');
 //        $mform->addHelpButton('meeturl', array('meeturl', get_string('meeturl', 'adobeconnect'), 'adobeconnect'));
         $mform->disabledIf('meeturl', 'tempenable', 'eq', 0);
-
+        $meetingservers = [];
+        for($i = 0; $i < (get_config(NULL, 'adobeconnect_count_servers') ?: 1);$i++) {
+            $meetingservers[$i + 1] = get_string('server', 'adobeconnect') . ' ' . ($i + 1);
+        }
+        $mform->addElement('select', 'meetingserver', get_string('meetingserver', 'adobeconnect'), $meetingservers);
+        $mform->addHelpButton('meetingserver', 'meetingserver', 'adobeconnect');
+        $mform->disabledIf('meetingserver', 'tempenable', 'eq', 0);
         // Public or private meeting
         $meetingpublic = array(1 => get_string('public', 'adobeconnect'), 0 => get_string('private', 'adobeconnect'));
         $mform->addElement('select', 'meetingpublic', get_string('meetingtype', 'adobeconnect'), $meetingpublic);
@@ -76,10 +97,10 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
 
 
         $mform->addElement('hidden', 'tempenable');
-        $mform->setType('type', PARAM_INT);
+        $mform->setType('tempenable', PARAM_INT);
 
         $mform->addElement('hidden', 'userid');
-        $mform->setType('type', PARAM_INT);
+        $mform->setType('userid', PARAM_INT);
 
         // Start and end date selectors
         $time       = time();
@@ -103,7 +124,6 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
 
     function data_preprocessing(&$default_values) {
         global $CFG, $DB;
-
         if (array_key_exists('update', $default_values)) {
 
             $params = array('instanceid' => $default_values['id']);
@@ -117,27 +137,29 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
     }
 
     function validation($data, $files) {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB, $USER, $COURSE;
 
         $errors = parent::validation($data, $files);
 
         $username     = set_username($USER->username, $USER->email);
         $usr_fldscoid = '';
+
         $aconnect     = aconnect_login();
 
         // Search for a Meeting with the same starting name.  It will cause a duplicate
         // meeting name (and error) when the user begins to add participants to the meeting
         $meetfldscoid = aconnect_get_folder($aconnect, 'meetings');
         $filter = array('filter-like-name' => $data['name']);
-        $namematches = aconnect_meeting_exists($aconnect, $meetfldscoid, $filter);        
-        
+        $namematches = aconnect_meeting_exists($aconnect, $meetfldscoid, $filter);
+
         /// Search the user's adobe connect folder
         $usrfldscoid = aconnect_get_user_folder_sco_id($aconnect, $username);
-
+        /*var_dump($usrfldscoid);
+        die();*/
 	if (!empty($usrfldscoid)) {
         	$namematches = $namematches + aconnect_meeting_exists($aconnect, $usrfldscoid, $filter);
         }
-        
+
         if (empty($namematches)) {
             $namematches = array();
         }
@@ -154,7 +176,7 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
 
         $filter = array('filter-like-url-path' => $url);
         $urlmatches = aconnect_meeting_exists($aconnect, $meetfldscoid, $filter);
-        
+
         /// Search the user's adobe connect folder
         if (!empty($usrfldscoid)) {
             $urlmatches = $urlmatches + aconnect_meeting_exists($aconnect, $usrfldscoid, $filter);
@@ -178,6 +200,14 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
             // Do nothing
         } elseif (!preg_match('/^[a-z][a-z\-]*/i', $data['meeturl'])) {
             $errors['meeturl'] = get_string('invalidurl', 'adobeconnect');
+        }
+
+        // Check for available groups if groupmode is selected
+        if ($data['groupmode'] > 0) {
+            $crsgroups = groups_get_all_groups($COURSE->id);
+            if (empty($crsgroups)) {
+                $errors['groupmode'] = get_string('missingexpectedgroups', 'adobeconnect');
+            }
         }
 
         // Adding activity
@@ -250,7 +280,6 @@ class mod_adobeconnect_mod_form extends moodleform_mod {
         }
 
         aconnect_logout($aconnect);
-
         return $errors;
     }
 

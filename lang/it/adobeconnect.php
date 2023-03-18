@@ -34,8 +34,7 @@ $string['duplicatemeetingname'] = 'Il nome di riunione &egrave; gia in uso, vi p
 $string['duplicateurl'] = 'La URL della riunione &egrave; gia in uso, vi preghiamo di modificarla';
 $string['editingfor'] = 'Editing for: $a';
 $string['email_login'] = 'Login tramite Email address';
-$string['email_login_desc'] = 'Selezionate questa opzione solo se il login al server Connect Pro &egrave; stato impostato all\'uso dell\'email address. Attenzione che modificando '.
-                              'questa opzione durante il normale utilizzo di questo modulo, si possono creare duplicati di utenti sul server Connect';
+$string['email_login_desc'] = 'Selezionate questa opzione solo se il login al server Connect Pro &egrave; stato impostato all\'uso dell\'email address. Attenzione che modificando questa opzione durante il normale utilizzo di questo modulo, si possono creare duplicati di utenti sul server Connect';
 $string['endtime'] = 'Termine';
 $string['existingusers'] = '$a existing users';
 $string['groupswitch'] = 'Filtra per gruppo';
@@ -76,10 +75,7 @@ $string['starttime'] = 'Inizio';
 $string['usergrouprequired'] = 'Questa Riunione righiede che gli utenti siano inseriti in un gruppo per potersi collegare';
 $string['testconnection'] = 'Test Connessione';
 $string['connectiontesttitle'] = 'Test Connessione Adobe Connect';
-$string['conntestintro'] = '<p>Saranno condotti una serie di test al fine di verificare la corretta impostazione del modulo'.
-' e per determinare se le credenziali fornite hanno diritti sufficienti sul server Adobe connect per garantire il funzionamento della attivita.'.
-' Se uno dei test dovesse fallire, si rende necessario operare per risolverli, o altrimenti il modulo non funzioner&agrave;a</p><p> Per ulteriori informazioni e assistenza su come impostare il server'.
-' Adobe Connect Pro, &egrave; possibile consultare le pagine presenti su Moodledocs per questo modulo <a href="{$a->url}">Help page</a></p>';
+$string['conntestintro'] = '<p>Saranno condotti una serie di test al fine di verificare la corretta impostazione del modulo e per determinare se le credenziali fornite hanno diritti sufficienti sul server Adobe connect per garantire il funzionamento della attivita. Se uno dei test dovesse fallire, si rende necessario operare per risolverli, o altrimenti il modulo non funzioner&agrave;a</p><p> Per ulteriori informazioni e assistenza su come impostare il server Adobe Connect Pro, &egrave; possibile consultare le pagine presenti su Moodledocs per questo modulo <a href="{$a->url}">Help page</a></p>';
 $string['greaterstarttime'] = 'L\'orario di inizio non puo essere maggiore di quello di fine';
 $string['invalidadobemeeturl'] = 'Il valore inserito non e corretto.  Per maggiori informazioni potete selezionare il pulsante di help relativo a questo campo';
 
@@ -101,3 +97,6 @@ $string['unableretrdetails'] = 'Impossibile reperire i dettagli per questa riuni
 $string['usernotenrolled'] = 'Solo gli utenti iscritti al corso possono partecipare alle riunioni'; // join.php 'Only users enrolled and have a role in this course can join this meeting'
 $string['nopresenterrole'] = 'Il ruolo Adobe Presenter non &egrave definito nel sistema: segnalate all\' amministratore il problema.'; // view.php 'error: error finding adobeconnectpresenter role'
 $string['nomeeting'] = 'La riunione richiesta non esiste sul server'; // view.php 'No meeting exists on the server'
+/********/
+$string['count_servers'] = 'Servers Count';
+$string['setting_server'] = 'Setting Server';

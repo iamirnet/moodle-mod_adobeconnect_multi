@@ -1,10 +1,24 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod
- * @subpackage adobeconnect
- * @author Akinsaya Delamarre (adelamarre@remote-learner.net)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_adobeconnect
+ * @author     Akinsaya Delamarre (adelamarre@remote-learner.net)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2015 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 
@@ -33,7 +47,7 @@ class connect_class_dom extends connect_class {
 
         foreach($params as $key => $data) {
 
-            $datahtmlent = htmlentities($data);
+            $datahtmlent = htmlentities($data, ENT_COMPAT, 'UTF-8');
             $child = $dom->createElement('param', $datahtmlent);
             $root->appendChild($child);
 
@@ -100,6 +114,16 @@ class connect_class_dom extends connect_class {
 
         $domnodelist = $dom->getElementsByTagName('status');
 
+        if (!is_object($domnodelist->item(0))) {
+            if (is_siteadmin($USER->id)) {
+                notice(get_string('adminemptyxml', 'adobeconnect'),
+                       $CFG->wwwroot . '/admin/settings.php?section=modsettingadobeconnect');
+            } else {
+                notice(get_string('emptyxml', 'adobeconnect'),
+                       '', $COURSE);
+            }
+        }
+
         if ($domnodelist->item(0)->hasAttributes()) {
 
             $domnode = $domnodelist->item(0)->attributes->getNamedItem('code');
@@ -133,6 +157,7 @@ class connect_class_dom extends connect_class {
         // The first parameter is 1 because we want to include the response header
         // to extract the session cookie
         if (!empty($username)) {
+            //$header = array("$CFG->adobeconnect_admin_httpauth: " . $username);
             $header = array("$CFG->adobeconnect_admin_httpauth: " . $username);
         }
 
@@ -146,6 +171,8 @@ class connect_class_dom extends connect_class {
    private function create_http_head_login_xml() {
         $params = array('action' => 'login',
                         'external-auth' => 'use',
+                        //'login' => $username,
+                        //'password' => strtoupper(md5($USER->username . 'hossein142001')),
                         );
 
         $this->create_request($params, false);

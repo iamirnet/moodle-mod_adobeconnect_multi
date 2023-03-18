@@ -1,13 +1,25 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod
- * @subpackage adobeconnect
- * @author Akinsaya Delamarre (adelamarre@remote-learner.net)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_adobeconnect
+ * @author     Akinsaya Delamarre (adelamarre@remote-learner.net)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2015 Remote Learner.net Inc http://www.remote-learner.net
  */
-
-/// (Replace adobeconnect with the name of your module and remove this line)
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
@@ -19,45 +31,45 @@ $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $a  = optional_param('a', 0, PARAM_INT);  // adobeconnect instance ID
 $groupid = optional_param('group', 0, PARAM_INT);
 
-global $CFG, $USER, $DB, $PAGE, $OUTPUT, $SESSION;
+global $CFG, $USER, $DB, $PAGE, $OUTPUT, $SESSION, $COURSE;
 
 if ($id) {
     if (! $cm = get_coursemodule_from_id('adobeconnect', $id)) {
-        error('Course Module ID was incorrect');
+        print_error('Course Module ID was incorrect');
     }
 
     $cond = array('id' => $cm->course);
     if (! $course = $DB->get_record('course', $cond)) {
-        error('Course is misconfigured');
+        print_error('Course is misconfigured');
     }
 
     $cond = array('id' => $cm->instance);
     if (! $adobeconnect = $DB->get_record('adobeconnect', $cond)) {
-        error('Course module is incorrect');
+        print_error('Course module is incorrect');
     }
 
 } else if ($a) {
 
     $cond = array('id' => $a);
     if (! $adobeconnect = $DB->get_record('adobeconnect', $cond)) {
-        error('Course module is incorrect');
+        print_error('Course module is incorrect');
     }
 
     $cond = array('id' => $adobeconnect->course);
     if (! $course = $DB->get_record('course', $cond)) {
-        error('Course is misconfigured');
+        print_error('Course is misconfigured');
     }
     if (! $cm = get_coursemodule_from_instance('adobeconnect', $adobeconnect->id, $course->id)) {
-        error('Course Module ID was incorrect');
+        print_error('Course Module ID was incorrect');
     }
 
 } else {
-    error('You must specify a course_module ID or an instance ID');
+    print_error('You must specify a course_module ID or an instance ID');
 }
-
+$COURSE = $course;
 require_login($course, true, $cm);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 // Check for submitted data
 if (($formdata = data_submitted($CFG->wwwroot . '/mod/adobeconnect/view.php')) && confirm_sesskey()) {
@@ -98,17 +110,20 @@ $stradobeconnects = get_string('modulenameplural', 'adobeconnect');
 $stradobeconnect  = get_string('modulename', 'adobeconnect');
 
 $params = array('instanceid' => $cm->instance);
-$sql = "SELECT meetingscoid ". 
+$sql = "SELECT meetingscoid ".
        "FROM {adobeconnect_meeting_groups} amg ".
        "WHERE amg.instanceid = :instanceid ";
 
 $meetscoids = $DB->get_records_sql($sql, $params);
 $recording = array();
-
+$meetingserver = isset($_REQUEST['meetingserver']) && $_REQUEST['meetingserver'] && is_numeric($_REQUEST['meetingserver']) ? $_REQUEST['meetingserver'] : ($DB->get_field('adobeconnect', 'meetingserver', ['course' => $COURSE->id]) ?: 1);
 if (!empty($meetscoids)) {
     $recscoids = array();
-
-    $aconnect = aconnect_login();
+    if ($instanceid = $DB->get_field('adobeconnect_meeting_groups', 'instanceid', ['meetingscoid' => array_values($meetscoids)[0]->meetingscoid])) {
+        //$DB->set_field('adobeconnect', 'templatescoid', array_values($meetscoids)[0]->meetingscoid, ['id' => $instanceid]);
+        $meetingserver = isset($_REQUEST['meetingserver']) && $_REQUEST['meetingserver'] && is_numeric($_REQUEST['meetingserver']) ? $_REQUEST['meetingserver'] : ($DB->get_field('adobeconnect', 'meetingserver', ['id' => $instanceid]) ?: 1);
+    }
+    $aconnect = aconnect_login($meetingserver);
 
     // Get the forced recordings folder sco-id
     // Get recordings that are based off of the meeting
@@ -179,7 +194,7 @@ if (!empty($meetscoids)) {
             }
         }
     }
-    
+
     unset($names);
 
 
@@ -224,12 +239,19 @@ if (!empty($meetscoids)) {
 $login = $usrobj->username;
 $password  = $usrobj->username;
 $https = false;
-
-if (isset($CFG->adobeconnect_https) and (!empty($CFG->adobeconnect_https))) {
+$meetingserver = $adobeconnect->meetingserver ?: 1;
+$meetingserver_prefix = $meetingserver == 1 ? "" : "s_{$meetingserver}_";
+$configac = (object) [
+    "adobeconnect_https" => $CFG->{"adobeconnect_{$meetingserver_prefix}https"},
+    "adobeconnect_host" => $CFG->{"adobeconnect_{$meetingserver_prefix}host"},
+    "adobeconnect_port" => $CFG->{"adobeconnect_{$meetingserver_prefix}port"},
+    "adobeconnect_meethost" => $CFG->{"adobeconnect_{$meetingserver_prefix}meethost"},
+];
+if (isset($configac->adobeconnect_https) and (!empty($configac->adobeconnect_https))) {
     $https = true;
 }
 
-$aconnect = new connect_class_dom($CFG->adobeconnect_host, $CFG->adobeconnect_port,
+$aconnect = new connect_class_dom($configac->adobeconnect_host, $configac->adobeconnect_port,
                                   '', '', '', $https);
 
 $aconnect->request_http_header_login(1, $login);
@@ -253,13 +275,13 @@ if ($cm->groupmode) {
         // Retrieve the currently active group for the user's session
         $groupid = groups_get_activity_group($cm);
 
-        /* Depending on the series of events groups_get_activity_group will 
+        /* Depending on the series of events groups_get_activity_group will
          * return a groupid value of  0 even if the user belongs to a group.
          * If the groupid is set to 0 then use the first group that the user
          * belongs to.
          */
         $aag = has_capability('moodle/site:accessallgroups', $context);
-        
+
         if (0 == $groupid) {
             $groups = groups_get_user_groups($cm->course, $USER->id);
             $groups = current($groups);
@@ -280,7 +302,7 @@ if ($cm->groupmode) {
 }
 
 
-$aconnect = aconnect_login();
+$aconnect = aconnect_login($meetingserver);
 
 // Get the Meeting details
 $cond = array('instanceid' => $adobeconnect->id, 'groupid' => $groupid);
@@ -294,22 +316,23 @@ $filter = array('filter-sco-id' => $scoid);
 if (($meeting = aconnect_meeting_exists($aconnect, $meetfldscoid, $filter))) {
     $meeting = current($meeting);
 } else {
-
     /* First check if the module instance has a user associated with it
        if so, then check the user's adobe connect folder for existince of the meeting */
     if (!empty($adobeconnect->userid)) {
         $username     = get_connect_username($adobeconnect->userid);
         $meetfldscoid = aconnect_get_user_folder_sco_id($aconnect, $username);
         $meeting      = aconnect_meeting_exists($aconnect, $meetfldscoid, $filter);
-        
+
         if (!empty($meeting)) {
             $meeting = current($meeting);
         }
     }
-    
+
     // If meeting does not exist then display an error message
     if (empty($meeting)) {
-
+        /*adobeconnect_add_instance($aconnect);
+        var_dump(55);
+        die();*/
         $message = get_string('nomeeting', 'adobeconnect');
         echo $OUTPUT->notification($message);
         aconnect_logout($aconnect);
@@ -333,8 +356,8 @@ if (has_capability('mod/adobeconnect:meetingpresenter', $context) or
     // Include the port number only if it is a port other than 80
     $port = '';
 
-    if (!empty($CFG->adobeconnect_port) and (80 != $CFG->adobeconnect_port)) {
-        $port = ':' . $CFG->adobeconnect_port;
+    if (!empty($configac->adobeconnect_port) and (80 != $configac->adobeconnect_port)) {
+        $port = ':' . $configac->adobeconnect_port;
     }
 
     $protocol = 'http://';
@@ -343,13 +366,13 @@ if (has_capability('mod/adobeconnect:meetingpresenter', $context) or
         $protocol = 'https://';
     }
 
-    $url = $protocol . $CFG->adobeconnect_meethost . $port
+    $url = $protocol . $configac->adobeconnect_meethost . $port
            . $meeting->url;
 
     $meetingdetail->url = $url;
 
 
-    $url = $protocol.$CFG->adobeconnect_meethost.$port.'/admin/meeting/sco/info?principal-id='.
+    $url = $protocol.$configac->adobeconnect_meethost.$port.'/admin/meeting/sco/info?principal-id='.
            $usrprincipal.'&amp;sco-id='.$scoid.'&amp;session='.$adobesession;
 
     // Get the server meeting details link
@@ -388,7 +411,7 @@ echo $OUTPUT->box_start('generalbox', 'meetingsummary');
 if (NOGROUPS != $cm->groupmode && 0 != $groupid) {
 
     echo $renderer->display_meeting_detail($meetingdetail, $id, $groupid);
-} elseif (NOGROUPS == $cm->groupmode) { 
+} else if (NOGROUPS == $cm->groupmode) {
 
     // If groups mode is disabled
     echo $renderer->display_meeting_detail($meetingdetail, $id, $groupid);
@@ -412,7 +435,7 @@ if (!$adobeconnect->meetingpublic) {
         $showrecordings = true;
     }
 } else {
-    
+
     // Check group mode and group membership
     $showrecordings = true;
 }
@@ -437,8 +460,15 @@ if ($showrecordings and !empty($recordings)) {
     echo $OUTPUT->box_end();
 }
 
-add_to_log($course->id, 'adobeconnect', 'view',
-           "view.php?id=$cm->id", "View {$adobeconnect->name} details", $cm->id);
+// Trigger an event for joining a meeting.
+$params = array(
+    'relateduserid' => $USER->id,
+    'courseid' => $course->id,
+    'context' => context_module::instance($cm->id)
+);
+
+$event = \mod_adobeconnect\event\adobeconnect_view::create($params);
+$event->trigger();
 
 /// Finish the page
 echo $OUTPUT->footer();
